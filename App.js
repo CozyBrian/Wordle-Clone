@@ -1,8 +1,10 @@
 import React,{useState, useEffect} from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Alert, StyleSheet, Text, View} from 'react-native';
-import { colors, CLEAR, ENTER } from './src/constants';
+import { colors, CLEAR, ENTER, colorsToEmoji } from './src/constants';
+import { words } from './src/data';
 import { SafeArea } from './src/utils/SafeArea';
+import * as Clipboard from 'expo-clipboard';
 import Keyboard from './src/components/Keyboard';
 
 const NUMBER_OF_TRIES = 6;
@@ -11,9 +13,18 @@ const tempArray = (arr) => {
   return [...arr.map((rows) => [...rows])];
 }
 
+const DayOfTheYear = () => {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now - start;
+  const oneDay = 1000 * 60 * 60 * 24;
+  const day = Math.floor(diff / oneDay);
+  return day;
+}
+
 export default function App() {
-  
-  const word = "hello";
+  const dayOfTheYear = DayOfTheYear();
+  const word = words[dayOfTheYear];
   const letters = word.split('');
   const [rows, setRows] = useState(new Array(NUMBER_OF_TRIES).fill(new Array(letters.length).fill('')));
 
@@ -29,13 +40,20 @@ export default function App() {
   
   const checkGameState = () => {
     if (checkIfWon()) {
-      Alert.alert("Huraayy!🥳🥳", "You Won!");
+      Alert.alert("Huraayy!🥳🥳", "You Won!", [{text: "Share", onPress: shareScore}]);
       setGameState("won");
     }
     if (checkIfLost()) {
       Alert.alert("Meh", "Try Again Tomorrow☺️");
       setGameState("lost");
     }
+  }
+
+  const shareScore = () => {
+    const textMap = rows.map((row, i) => (row.map((cell, j) => (colorsToEmoji[getBGColor(i, j)]))).join("")).filter((row) => row).join('\n');
+    const textToShare = `Wordle \n\n ${textMap}`
+    Clipboard.setString(textToShare);
+    Alert.alert("Score Copied", "You can share your score to social media ")
   }
 
   const checkIfWon = () => {
