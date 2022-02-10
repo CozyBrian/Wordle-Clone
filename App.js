@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { colors, CLEAR, ENTER, colorsToEmoji } from "./src/constants";
+import { ColorView } from "./src/components/view/color-view";
 import { words } from "./src/data";
 import { SafeArea } from "./src/utils/SafeArea";
 import * as Clipboard from "expo-clipboard";
@@ -30,6 +31,7 @@ export default function App() {
     new Array(NUMBER_OF_TRIES).fill(new Array(letters.length).fill(""))
   );
 
+  const [bigPP, setBigPP] = useState(false);
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
   const [gameState, setGameState] = useState("playing");
@@ -95,6 +97,7 @@ export default function App() {
       if (curCol === rows[0].length) {
         setCurRow(curRow + 1);
         setCurCol(0);
+        setBigPP(true);
       }
       return;
     }
@@ -121,6 +124,23 @@ export default function App() {
     return colors.darkgrey;
   };
 
+  const getBGColor2 = (row, col) => {
+    const letter = rows[row][col];
+
+    if (row >= curRow) {
+      return colors.black;
+    }
+    if (row < curRow - 1) {
+      if (letter === letters[col]) {
+        return colors.primary;
+      }
+      if (letters.includes(letter)) {
+        return colors.secondary;
+      }
+    }
+    return colors.darkgrey;
+  };
+
   const getLetterWithColor = (color) => {
     return rows.flatMap((row, i) =>
       row.filter((cell, j) => getBGColor(i, j) === color)
@@ -140,12 +160,15 @@ export default function App() {
         {rows.map((row, i) => (
           <View key={`row-${i}`} style={styles.row}>
             {row.map((cell, j) => (
-              <View
+              <ColorView
                 key={`cell-${i}-${j}`}
-                style={[styles.cell, { backgroundColor: getBGColor(i, j) }]}
+                bgColor={getBGColor(i, j)}
+                bgColor2={getBGColor2(i, j)}
+                BigPP={bigPP}
+                rows={curRow}
               >
                 <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
-              </View>
+              </ColorView>
             ))}
           </View>
         ))}

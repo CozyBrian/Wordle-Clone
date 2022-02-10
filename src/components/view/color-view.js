@@ -1,9 +1,17 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, Pressable } from "react-native";
+import React, { useRef, useEffect } from "react";
+import { Animated, StyleSheet } from "react-native";
 import { colors } from "../../constants";
 
-export const ColorView = ({ children, bgColor, BigPP }) => {
+export const ColorView = ({ children, bgColor, bgColor2, BigPP, rows }) => {
   const translation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(translation, {
+      toValue: 100,
+      duration: 200,
+      useNativeDriver: false,
+    }).reset();
+  }, [rows]);
 
   const pressed = () => {
     Animated.timing(translation, {
@@ -14,7 +22,9 @@ export const ColorView = ({ children, bgColor, BigPP }) => {
   };
 
   if (BigPP) {
-    pressed();
+    setTimeout(() => {
+      pressed();
+    }, 0);
   }
 
   return (
@@ -24,7 +34,7 @@ export const ColorView = ({ children, bgColor, BigPP }) => {
         {
           backgroundColor: translation.interpolate({
             inputRange: [0, 100],
-            outputRange: [colors.black, bgColor],
+            outputRange: [bgColor2, bgColor],
           }),
         },
       ]}
