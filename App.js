@@ -1,17 +1,17 @@
-import React,{useState, useEffect} from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { Alert, StyleSheet, Text, View} from 'react-native';
-import { colors, CLEAR, ENTER, colorsToEmoji } from './src/constants';
-import { words } from './src/data';
-import { SafeArea } from './src/utils/SafeArea';
-import * as Clipboard from 'expo-clipboard';
-import Keyboard from './src/components/Keyboard';
+import React, { useState, useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import { Alert, StyleSheet, Text, View } from "react-native";
+import { colors, CLEAR, ENTER, colorsToEmoji } from "./src/constants";
+import { words } from "./src/data";
+import { SafeArea } from "./src/utils/SafeArea";
+import * as Clipboard from "expo-clipboard";
+import Keyboard from "./src/components/Keyboard";
 
 const NUMBER_OF_TRIES = 6;
 
 const tempArray = (arr) => {
   return [...arr.map((rows) => [...rows])];
-}
+};
 
 const DayOfTheYear = () => {
   const now = new Date();
@@ -20,41 +20,50 @@ const DayOfTheYear = () => {
   const oneDay = 1000 * 60 * 60 * 24;
   const day = Math.floor(diff / oneDay);
   return day;
-}
+};
 
 export default function App() {
   const dayOfTheYear = DayOfTheYear();
   const word = words[dayOfTheYear];
-  const letters = word.split('');
-  const [rows, setRows] = useState(new Array(NUMBER_OF_TRIES).fill(new Array(letters.length).fill('')));
+  const letters = word.split("");
+  const [rows, setRows] = useState(
+    new Array(NUMBER_OF_TRIES).fill(new Array(letters.length).fill(""))
+  );
 
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
-  const [gameState, setGameState] = useState("playing")
+  const [gameState, setGameState] = useState("playing");
 
   useEffect(() => {
     if (curRow > 0) {
       checkGameState();
     }
   }, [curRow]);
-  
+
   const checkGameState = () => {
     if (checkIfWon()) {
-      Alert.alert("Huraayy!🥳🥳", "You Won!", [{text: "Share", onPress: shareScore}]);
+      Alert.alert("Huraayy!🥳🥳", "You Won!", [
+        { text: "Share", onPress: shareScore },
+      ]);
       setGameState("won");
     }
     if (checkIfLost()) {
       Alert.alert("Meh", "Try Again Tomorrow☺️");
       setGameState("lost");
     }
-  }
+  };
 
   const shareScore = () => {
-    const textMap = rows.map((row, i) => (row.map((cell, j) => (colorsToEmoji[getBGColor(i, j)]))).join("")).filter((row) => row).join('\n');
-    const textToShare = `Wordle \n\n ${textMap}`
+    const textMap = rows
+      .map((row, i) =>
+        row.map((cell, j) => colorsToEmoji[getBGColor(i, j)]).join("")
+      )
+      .filter((row) => row)
+      .join("\n");
+    const textToShare = `Wordle \n\n ${textMap}`;
     Clipboard.setString(textToShare);
-    Alert.alert("Score Copied", "You can share your score to social media ")
-  }
+    Alert.alert("Score Copied", "You can share your score to social media ");
+  };
 
   const checkIfWon = () => {
     const row = rows[curRow - 1];
@@ -69,12 +78,12 @@ export default function App() {
     if (gameState !== "playing") {
       return;
     }
-    
+
     const updatedRow = tempArray(rows);
 
     if (key === CLEAR) {
       const prevCol = curCol - 1;
-      updatedRow[curRow][prevCol] = '';
+      updatedRow[curRow][prevCol] = "";
       setRows(updatedRow);
       if (curCol > 0) {
         setCurCol(prevCol);
@@ -85,21 +94,20 @@ export default function App() {
     if (key === ENTER) {
       if (curCol === rows[0].length) {
         setCurRow(curRow + 1);
-        setCurCol(0)
+        setCurCol(0);
       }
       return;
     }
-
 
     if (curCol < rows[0].length) {
       updatedRow[curRow][curCol] = key;
       setRows(updatedRow);
       setCurCol(curCol + 1);
     }
-  }
+  };
 
   const getBGColor = (row, col) => {
-    const letter = rows[row][col]
+    const letter = rows[row][col];
 
     if (row >= curRow) {
       return colors.black;
@@ -111,11 +119,13 @@ export default function App() {
       return colors.secondary;
     }
     return colors.darkgrey;
-  }
-  
+  };
+
   const getLetterWithColor = (color) => {
-    return rows.flatMap((row, i) => (row.filter((cell, j) => (getBGColor(i, j) === color))));
-  }
+    return rows.flatMap((row, i) =>
+      row.filter((cell, j) => getBGColor(i, j) === color)
+    );
+  };
 
   const greenCaps = getLetterWithColor(colors.primary);
   const yellowCaps = getLetterWithColor(colors.secondary);
@@ -127,19 +137,26 @@ export default function App() {
       <Text style={styles.title}>WORDLE</Text>
 
       <View style={styles.map}>
-
         {rows.map((row, i) => (
           <View key={`row-${i}`} style={styles.row}>
             {row.map((cell, j) => (
-            <View key={`cell-${i}-${j}`} style={[styles.cell, {backgroundColor: getBGColor( i, j)}]}>
-              <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
-            </View>
-            ))}      
+              <View
+                key={`cell-${i}-${j}`}
+                style={[styles.cell, { backgroundColor: getBGColor(i, j) }]}
+              >
+                <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
+              </View>
+            ))}
           </View>
         ))}
       </View>
 
-      <Keyboard onKeyPressed={onKeyPressed} greenCaps={greenCaps} yellowCaps={yellowCaps} greyCaps={greyCaps}/>
+      <Keyboard
+        onKeyPressed={onKeyPressed}
+        greenCaps={greenCaps}
+        yellowCaps={yellowCaps}
+        greyCaps={greyCaps}
+      />
     </SafeArea>
   );
 }
@@ -148,7 +165,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.black,
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
     color: colors.lightgrey,
@@ -156,14 +173,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     letterSpacing: 7,
   },
-  map: { 
+  map: {
     alignSelf: "stretch",
-    height: 100
+    height: 100,
   },
   row: {
     alignSelf: "stretch",
     flexDirection: "row",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   cell: {
     flex: 1,
@@ -173,11 +190,11 @@ const styles = StyleSheet.create({
     margin: 3,
     maxWidth: 80,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   cellText: {
     color: colors.lightgrey,
     fontSize: 30,
-    fontWeight: "bold"
-  }
+    fontWeight: "bold",
+  },
 });
