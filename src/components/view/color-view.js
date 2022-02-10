@@ -8,7 +8,7 @@ export const ColorView = ({ children, bgColor, bgColor2, BigPP, rows }) => {
   useEffect(() => {
     Animated.timing(translation, {
       toValue: 100,
-      duration: 200,
+      duration: 100,
       useNativeDriver: false,
     }).reset();
   }, [rows]);
@@ -24,7 +24,7 @@ export const ColorView = ({ children, bgColor, bgColor2, BigPP, rows }) => {
   if (BigPP) {
     setTimeout(() => {
       pressed();
-    }, 0);
+    }, 1);
   }
 
   return (

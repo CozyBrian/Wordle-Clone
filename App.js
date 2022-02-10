@@ -40,19 +40,38 @@ export default function App() {
     if (curRow > 0) {
       checkGameState();
     }
+    console.log(`${curRow} of ${rows.length}`);
   }, [curRow]);
 
   const checkGameState = () => {
     if (checkIfWon()) {
+      setGameState("won");
       Alert.alert("Huraayy!🥳🥳", "You Won!", [
         { text: "Share", onPress: shareScore },
       ]);
-      setGameState("won");
-    }
-    if (checkIfLost()) {
+    } else if (gameState === "playing" && curRow === rows.length) {
       Alert.alert("Meh", "Try Again Tomorrow☺️");
       setGameState("lost");
     }
+  };
+
+  const checkIfWon = () => {
+    const row = rows[curRow - 1];
+    return row.every((letter, i) => letter === letters[i]);
+  };
+
+  const checkIfLost = () => {
+    setTimeout(() => {
+      if (curRow === rows.length && gameState !== "won") {
+        return true;
+      }
+    }, 50);
+
+    // if (gameState !== "won") {
+    //   return false;
+    // } else if (curRow === rows.length) {
+    //   return true;
+    // }
   };
 
   const shareScore = () => {
@@ -65,15 +84,6 @@ export default function App() {
     const textToShare = `Wordle \n\n ${textMap}`;
     Clipboard.setString(textToShare);
     Alert.alert("Score Copied", "You can share your score to social media ");
-  };
-
-  const checkIfWon = () => {
-    const row = rows[curRow - 1];
-    return row.every((letter, i) => letter === letters[i]);
-  };
-
-  const checkIfLost = () => {
-    return curRow === rows.length;
   };
 
   const onKeyPressed = (key) => {
@@ -137,8 +147,9 @@ export default function App() {
       if (letters.includes(letter)) {
         return colors.secondary;
       }
+      return colors.darkgrey;
     }
-    return colors.darkgrey;
+    return colors.black;
   };
 
   const getLetterWithColor = (color) => {
