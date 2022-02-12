@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
-import { colors, CLEAR, ENTER, colorsToEmoji } from "../../constants";
-import { ColorView } from "../../components/view/color-view";
+import { StyleSheet, Text, View } from "react-native";
+import { colors, CLEAR, ENTER } from "../../constants";
 import { DayOfTheYear, tempArray } from "../../utils";
 import words from "../../data";
-import * as Clipboard from "expo-clipboard";
 import Keyboard from "../../components/Keyboard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Animated, { FlipInEasyY, ZoomIn } from "react-native-reanimated";
+import EndScreen from "../EndScreen";
 
 const NUMBER_OF_TRIES = 6;
+const dayOfTheYear = DayOfTheYear() + 2;
+const dayKey = `day-${dayOfTheYear}`;
 
 const Game = () => {
-  const dayOfTheYear = DayOfTheYear();
+  //AsyncStorage.removeItem("@game");
   const word = words[dayOfTheYear];
   const letters = word.split("");
   const [rows, setRows] = useState(
@@ -41,7 +43,7 @@ const Game = () => {
   }, []);
 
   const SaveState = async () => {
-    const data = {
+    const dataForToday = {
       rows,
       curRow,
       curCol,
@@ -49,7 +51,13 @@ const Game = () => {
     };
 
     try {
-      const dataString = JSON.stringify(data);
+      const existingStateString = await AsyncStorage.getItem("@game");
+      const existingState = existingStateString
+        ? JSON.parse(existingStateString)
+        : {};
+
+      existingState[dayKey] = dataForToday;
+      const dataString = JSON.stringify(existingState);
       await AsyncStorage.setItem("@game", dataString);
     } catch (e) {
       console.log("Failed to save state", e);
@@ -60,27 +68,22 @@ const Game = () => {
     const dataString = await AsyncStorage.getItem("@game");
     try {
       const data = JSON.parse(dataString);
-      setRows(data.rows);
-      setCurRow(data.curRow);
-      setCurCol(data.curCol);
-      setGameState(data.gameState);
+      const day = data[dayKey];
+      setRows(day.rows);
+      setCurRow(day.curRow);
+      setCurCol(day.curCol);
+      setGameState(day.gameState);
       setBigPP(true);
     } catch (e) {
       console.log("Couldn't parse state", e);
     }
-    console.log(dataString);
-
     setLoaded(true);
   };
 
   const checkGameState = () => {
     if (checkIfWon()) {
       setGameState("won");
-      Alert.alert("Huraayy!🥳🥳", "You Won!", [
-        { text: "Share", onPress: shareScore },
-      ]);
     } else if (gameState === "playing" && curRow === rows.length) {
-      Alert.alert("Meh", "Try Again Tomorrow☺️");
       setGameState("lost");
     }
   };
@@ -88,32 +91,6 @@ const Game = () => {
   const checkIfWon = () => {
     const row = rows[curRow - 1];
     return row.every((letter, i) => letter === letters[i]);
-  };
-
-  const checkIfLost = () => {
-    setTimeout(() => {
-      if (curRow === rows.length && gameState !== "won") {
-        return true;
-      }
-    }, 50);
-
-    // if (gameState !== "won") {
-    //   return false;
-    // } else if (curRow === rows.length) {
-    //   return true;
-    // }
-  };
-
-  const shareScore = () => {
-    const textMap = rows
-      .map((row, i) =>
-        row.map((cell, j) => colorsToEmoji[getBGColor(i, j)]).join("")
-      )
-      .filter((row) => row)
-      .join("\n");
-    const textToShare = `Wordle \n\n ${textMap}`;
-    Clipboard.setString(textToShare);
-    Alert.alert("Score Copied", "You can share your score to social media ");
   };
 
   const onKeyPressed = (key) => {
@@ -196,22 +173,58 @@ const Game = () => {
   const yellowCaps = getLetterWithColor(colors.secondary);
   const greyCaps = getLetterWithColor(colors.darkgrey);
 
+  if (gameState !== "playing") {
+    return (
+      <EndScreen
+        gameState={gameState === "won"}
+        rows={rows}
+        getBGColor={getBGColor}
+      />
+    );
+  }
+
+  const getCellStyle = (i, j) => [
+    styles.cell,
+    {
+      borderColor: isCellActive(i, j) ? colors.lightgrey : colors.darkgrey,
+      backgroundColor: getBGColor(i, j),
+    },
+  ];
+
   return (
     <>
       <View style={styles.map}>
         {rows.map((row, i) => (
           <View key={`row-${i}`} style={styles.row}>
             {row.map((cell, j) => (
-              <ColorView
-                key={`cell-${i}-${j}`}
-                bgColor={getBGColor(i, j)}
-                bgColor2={getBGColor2(i, j)}
-                BigPP={bigPP}
-                rows={curRow}
-                bor={isCellActive(i, j)}
-              >
-                <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
-              </ColorView>
+              <>
+                {i < curRow && (
+                  <Animated.View
+                    key={`cell-color-${i}-${j}`}
+                    entering={FlipInEasyY.delay(j * 30)}
+                    style={getCellStyle(i, j)}
+                  >
+                    <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
+                  </Animated.View>
+                )}
+                {i === curRow && !!cell && (
+                  <Animated.View
+                    key={`cell-active-${i}-${j}`}
+                    entering={ZoomIn}
+                    style={getCellStyle(i, j)}
+                  >
+                    <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
+                  </Animated.View>
+                )}
+                {!cell && (
+                  <Animated.View
+                    key={`cell-${i}-${j}`}
+                    style={getCellStyle(i, j)}
+                  >
+                    <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
+                  </Animated.View>
+                )}
+              </>
             ))}
           </View>
         ))}
