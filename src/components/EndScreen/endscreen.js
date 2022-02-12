@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import { colors, colorsToEmoji } from "../../constants";
 import * as Clipboard from "expo-clipboard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Animated, { SlideInLeft } from "react-native-reanimated";
 
 const StatNumber = ({ number, label }) => (
   <View style={styles().statnum}>
@@ -149,7 +150,10 @@ const EndScreen = ({ gameState, rows, getBGColor }) => {
   };
 
   return (
-    <View style={styles().container}>
+    <Animated.View
+      entering={SlideInLeft.springify().mass(0.5)}
+      style={styles().container}
+    >
       <Text style={styles().title}>{gameState ? "CONGRATS!" : "SORRY"}</Text>
       <Text style={styles().subtitle}>STATISTICS</Text>
       <View style={{ flexDirection: "row", marginBottom: 20 }}>
@@ -188,7 +192,7 @@ const EndScreen = ({ gameState, rows, getBGColor }) => {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
