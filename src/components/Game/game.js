@@ -20,7 +20,6 @@ const Game = () => {
     new Array(NUMBER_OF_TRIES).fill(new Array(letters.length).fill(""))
   );
 
-  const [bigPP, setBigPP] = useState(false);
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
   const [loaded, setLoaded] = useState(false);
@@ -73,7 +72,6 @@ const Game = () => {
       setCurRow(day.curRow);
       setCurCol(day.curCol);
       setGameState(day.gameState);
-      setBigPP(true);
     } catch (e) {
       console.log("Couldn't parse state", e);
     }
@@ -114,7 +112,6 @@ const Game = () => {
       if (curCol === rows[0].length) {
         setCurRow(curRow + 1);
         setCurCol(0);
-        setBigPP(true);
       }
       return;
     }
