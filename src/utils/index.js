@@ -1,3 +1,5 @@
+import { colors } from "../constants";
+
 export const tempArray = (arr) => {
   return [...arr.map((rows) => [...rows])];
 };
