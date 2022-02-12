@@ -2,7 +2,14 @@ import React, { useRef, useEffect } from "react";
 import { Animated, StyleSheet } from "react-native";
 import { colors } from "../../constants";
 
-export const ColorView = ({ children, bgColor, bgColor2, BigPP, rows }) => {
+export const ColorView = ({
+  children,
+  bgColor,
+  bgColor2,
+  BigPP,
+  rows,
+  bor,
+}) => {
   const translation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -36,6 +43,7 @@ export const ColorView = ({ children, bgColor, bgColor2, BigPP, rows }) => {
             inputRange: [0, 100],
             outputRange: [bgColor2, bgColor],
           }),
+          borderColor: bor ? colors.lightgrey : colors.darkgrey,
         },
       ]}
     >
