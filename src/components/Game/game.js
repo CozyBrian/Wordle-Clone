@@ -13,7 +13,6 @@ const dayOfTheYear = DayOfTheYear() + 2;
 const dayKey = `day-${dayOfTheYear}`;
 
 const Game = () => {
-  //AsyncStorage.removeItem("@game");
   const word = words[dayOfTheYear];
   const letters = word.split("");
   const [rows, setRows] = useState(
@@ -136,24 +135,6 @@ const Game = () => {
       return colors.secondary;
     }
     return colors.darkgrey;
-  };
-
-  const getBGColor2 = (row, col) => {
-    const letter = rows[row][col];
-
-    if (row >= curRow) {
-      return colors.black;
-    }
-    if (row < curRow - 1) {
-      if (letter === letters[col]) {
-        return colors.primary;
-      }
-      if (letters.includes(letter)) {
-        return colors.secondary;
-      }
-      return colors.darkgrey;
-    }
-    return colors.black;
   };
 
   const getLetterWithColor = (color) => {

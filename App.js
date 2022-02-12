@@ -9,7 +9,7 @@ export default function App() {
   return (
     <SafeArea style={styles.container}>
       <StatusBar style="light" backgroundColor={colors.darkgrey} />
-      <Text style={styles.title}>WORDLE</Text>
+      <Text style={styles.title}>VOCABDLE</Text>
       <Game />
     </SafeArea>
   );
